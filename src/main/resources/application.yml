@@ -1,9 +1,16 @@
 spring:
   profiles:
     active: local
+  # 지정 Job Name만 실행. 실행시 --job.name={jobName} 옵션
   batch:
     job:
       names: ${job.name:NONE}
+logging:
+  level:
+    org:
+      springframework:
+        batch: DEBUG
+
 ---
 spring:
   profiles: local
