@@ -29,6 +29,6 @@ spring:
   datasource:
     hikari:
       jdbc-url: jdbc:mysql://localhost:3306/spring_batch?characterEncoding=UTF-8&serverTimezone=UTC
-      username: njkim
-      password: 1234
+      username: root
+      password: skawns123
       driver-class-name: com.mysql.cj.jdbc.Driver
