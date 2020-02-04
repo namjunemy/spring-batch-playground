@@ -1,4 +1,4 @@
-package io.namjune.batch.job;
+package io.namjune.batch.job.processor;
 
 import io.namjune.batch.domain.Teacher;
 import lombok.RequiredArgsConstructor;
@@ -23,15 +23,14 @@ import javax.persistence.EntityManagerFactory;
 @Configuration
 public class ProcessorConvertJobConfiguration {
 
-    public static final String JOB_NAME = "ProcessorConvertBatch";
+    public static final String JOB_NAME = "processorConvertBatch";
     public static final String BEAN_PREFIX = JOB_NAME + "_";
+    private static final int chunkSize = 1000;
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
     private final EntityManagerFactory emf;
 
-    @Value("${chunkSize:1000}")
-    private int chunkSize;
 
     @Bean(JOB_NAME)
     public Job job() {
