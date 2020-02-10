@@ -1,6 +1,6 @@
 package io.namjune.batch.job;
 
-import io.namjune.batch.domain.PaySum;
+import io.namjune.batch.domain.SalesSum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -28,7 +28,7 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 @RequiredArgsConstructor
 @Configuration
 public class BatchJpaTestConfiguration {
-    public static final DateTimeFormatter FORMATTER = ofPattern("yyyyMMdd");
+    public static final DateTimeFormatter FORMATTER = ofPattern("yyyy-MM-dd");
     public static final String JOB_NAME = "batchJpaUnitTestJob";
     public static final String BEAN_PREFIX = JOB_NAME + "_";
 
@@ -49,29 +49,29 @@ public class BatchJpaTestConfiguration {
     @Bean(BEAN_PREFIX + "step")
     public Step batchJpaUnitTestJobStep() {
         return stepBuilderFactory.get(BEAN_PREFIX + "step")
-            .<PaySum, PaySum>chunk(chunkSize)
+            .<SalesSum, SalesSum>chunk(chunkSize)
             .reader(batchJpaUnitTestJobReader(null))
             .writer(batchJpaUnitTestJobWriter())
             .build();
     }
 
 
-    @Bean(BEAN_PREFIX + "reader")
+    @Bean
     @StepScope
-    public JpaPagingItemReader<PaySum> batchJpaUnitTestJobReader(@Value("#{jobParameters[orderDate]}") String orderDate) {
+    public JpaPagingItemReader<SalesSum> batchJpaUnitTestJobReader(@Value("#{jobParameters[orderDate]}") String orderDate) {
         Map<String, Object> params = new HashMap<>();
 
         params.put("orderDate", LocalDate.parse(orderDate, FORMATTER));
 
-        String className = PaySum.class.getName();
+        String className = SalesSum.class.getName(); // JPQL 에서 새로운 Entity로 반환하기 위해
         String queryString = String.format(
-            "SELECT new %s(p.tx_date_time, SUM(p.amount)) " +
-                "FROM Pay p " +
-                "WHERE p.tx_date_time =:orderDate "  +
-                "GROUP BY p.tx_date_time ", className);
+            "SELECT new %s(s.orderDate, SUM(s.amount)) " +
+                "FROM Sales s " +
+                "WHERE s.orderDate =:orderDate " +
+                "GROUP BY s.orderDate ", className);
 
-        return new JpaPagingItemReaderBuilder<PaySum>()
-            .name(BEAN_PREFIX + "reader")
+        return new JpaPagingItemReaderBuilder<SalesSum>()
+            .name("batchJpaUnitTestJobReader")
             .entityManagerFactory(emf)
             .pageSize(chunkSize)
             .queryString(queryString)
@@ -79,8 +79,9 @@ public class BatchJpaTestConfiguration {
             .build();
     }
 
-    private JpaItemWriter<PaySum> batchJpaUnitTestJobWriter() {
-        JpaItemWriter<PaySum> jpaItemWriter = new JpaItemWriter<>();
+    @Bean
+    public JpaItemWriter<SalesSum> batchJpaUnitTestJobWriter() {
+        JpaItemWriter<SalesSum> jpaItemWriter = new JpaItemWriter<>();
         jpaItemWriter.setEntityManagerFactory(emf);
         return jpaItemWriter;
     }
